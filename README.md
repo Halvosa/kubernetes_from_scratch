@@ -99,7 +99,7 @@ The Kubernetes control plane will not interact with the runtime directly. Instea
 
 _"In standard docker kubernetes cluster, kubelet is running on each node as systemd service and is taking care of communication between runtime and api service. It is reponsible for starting microservices pods (such as kube-proxy, kubedns, etc. - they can be different for various ways of deploying k8s) and user pods. Configuration of kubelet determines which runtime is used and in what way."_ (https://github.com/cri-o/cri-o/blob/main/tutorials/kubernetes.md),
 
-# Turning off swap
+### Turning off swap
 Kubelet does not currently support using swap. The explanation is that “Kubernetes did not support the use of swap memory on Linux, as it is difficult to provide guarantees and account for pod memory utilization when swap is involved. As part of Kubernetes' earlier design, swap support was considered out of scope, and a kubelet would by default fail to start if swap was detected on a node.” (https://kubernetes.io/blog/2021/08/09/run-nodes-with-swap-alpha/)
 
 ```console
@@ -135,18 +135,33 @@ We wish to provide some lengthy parameteres to Kubelet when launching it, so let
 [root@node-1 ~]# vi start_kubelet.sh        (could make a service for this)
 [root@node-1 ~]# cat start_kubelet.sh 
 #!/bin/bash
-kubelet --pod-manifest-path=/etc/kubernetes/manifests --container-runtime=remote --container-runtime-endpoint=unix:///var/run/crio/crio.sock &> /var/log/containers/kubelet.log
+kubelet --pod-manifest-path=/etc/kubernetes/manifests \
+ --container-runtime=remote \
+ --container-runtime-endpoint=unix:///var/run/crio/crio.sock \
+ &> /var/log/containers/kubelet.log
 [root@node-1 ~]# chmod o+x start_kubelet.sh
 [root@node-1 ~]# ./start_kubelet &
 [1] 2915
 ```
 
-If you take a look kubelet.log, you will probably find this error:
+As mentioned above, Kubelet will check the given path every 20 seconds for YAML manifests and provision pods based on that. We log stdin and stderr to kubelet.log, and we run the process as a job in the background. Kubelet and CRI-O communicate using gRPC, which uses HTTP under the hood. We had to specify the path to a Unix domain socket set up by CRI-O (https://en.wikipedia.org/wiki/Unix_domain_socket). 
+
+If you take a look in kubelet.log, you will probably find this error:
+
 ```console
 E1029 22:04:01.076306    2916 remote_runtime.go:116] "RunPodSandbox from runtime service failed" err="rpc error: code = Unknown desc = cri-o configured with systemd cgroup manager, but did not receive slice as parent: /kubepods/besteffort/pod19da9fa0d08737487dc32786dfe9d250"
 ```
 
-As mentioned above, Kubelet will check the given path every 20 seconds for YAML manifests and provision pods based on that. We log stdin and stderr to kubelet.log, and we run the process as a job in the background. Kubelet and CRI-O communicate using gRPC, which uses HTTP under the hood. We had to specify the path to a Unix domain socket set up by CRI-O (https://en.wikipedia.org/wiki/Unix_domain_socket). 
+To fix this, we first need to stop Kubelet:
+```console
+[root@node-1 ~]# jobs
+[1]+  Running       
+[root@node-1 ~]# fg 1
+./start_kubelet.sh
+^C[root@node-1 ~]#
+```
+
+Next, we simply add the parameter "--cgroup-driver=systemd" to _start_kubelet.sh_ and launch Kubelet again.
 
 
 ## Etcd
