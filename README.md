@@ -163,6 +163,64 @@ To fix this, we first need to stop Kubelet:
 
 Next, we simply add the parameter "--cgroup-driver=systemd" to _start_kubelet.sh_ and launch Kubelet again.
 
+Skriv om med bruk av ---config.
+
+```console
+[root@node-1 ~]# ps -ef | grep alpine
+root        2838       1  0 12:20 ?        00:00:00 /usr/bin/conmon -b /run/containers/storage/overlay-containers/f865ab1e12d2d1b32e8f5d6c1fb0fc7388bf745c2d2410a38078750731b73e1c/userdata -c f865ab1e12d2d1b32e8f5d6c1fb0fc7388bf745c2d2410a38078750731b73e1c --exit-dir /var/run/crio/exits -l /var/log/pods/default_kubelet-test-node-1_19da9fa0d08737487dc32786dfe9d250/alpine/2.log --log-level info -n k8s_alpine_kubelet-test-node-1_default_19da9fa0d08737487dc32786dfe9d250_2 -P /run/containers/storage/overlay-containers/f865ab1e12d2d1b32e8f5d6c1fb0fc7388bf745c2d2410a38078750731b73e1c/userdata/conmon-pidfile -p /run/containers/storage/overlay-containers/f865ab1e12d2d1b32e8f5d6c1fb0fc7388bf745c2d2410a38078750731b73e1c/userdata/pidfile --persist-dir /var/lib/containers/storage/overlay-containers/f865ab1e12d2d1b32e8f5d6c1fb0fc7388bf745c2d2410a38078750731b73e1c/userdata -r /usr/bin/runc --runtime-arg --root=/run/runc --socket-dir-path /var/run/crio -u f865ab1e12d2d1b32e8f5d6c1fb0fc7388bf745c2d2410a38078750731b73e1c -s
+root        4955    2534  0 12:42 pts/0    00:00:00 grep --color=auto alpine
+```
+
+We now have a running container, but kubelet and crio do not provide us with any practical way of interacting with the container. We will therefore install crictl, which is a tool that lets us interact with CRI-O through more or less the same set of commands as those you find in Podman and Docker.
+
+### Crictl
+_https://github.com/kubernetes-sigs/cri-tools/_
+
+"crictl provides a CLI for CRI-compatible container runtimes. This allows the CRI runtime developers to debug their runtime without needing to set up Kubernetes components." (https://github.com/kubernetes-sigs/cri-tools/blob/master/docs/crictl.md)
+
+Installing crictl is easy. Just download the binary and move it to _/usr/local/bin_. (/usr/bin is for binaries that are managed by the package manager, while /usr/local/bin is for binaries that are not so, e.g., locally compiled binaries.)
+
+```console
+VERSION="v1.21.0"
+wget https://github.com/kubernetes-sigs/cri-tools/releases/download/$VERSION/crictl-$VERSION-linux-amd64.tar.gz
+sudo tar zxvf crictl-$VERSION-linux-amd64.tar.gz -C /usr/local/bin
+rm -f crictl-$VERSION-linux-amd64.tar.gz
+```
+
+We can list containers with the ps command:
+
+```console
+[root@node-1 ~]# crictl ps
+CONTAINER           IMAGE                                                                                              CREATED             STATE               NAME                ATTEMPT             POD ID
+f865ab1e12d2d       docker.io/library/alpine@sha256:69704ef328d05a9f806b6b8502915e6a0a4faa4d72018dc42343f511490daf8a   54 minutes ago      Running             alpine              2                   7bac0591b85b1 
+```
+
+We can open a terminal into the container with the exec command:
+
+```console
+[root@node-1 ~]# crictl exec -it f865ab1e12d2d /bin/sh
+/ # ls -l
+total 8
+drwxr-xr-x    2 root     root          4096 Aug 27 11:05 bin
+drwxr-xr-x    5 root     root           360 Oct 31 12:20 dev
+drwxr-xr-x    1 root     root            25 Oct 31 12:20 etc
+drwxr-xr-x    2 root     root             6 Aug 27 11:05 home
+drwxr-xr-x    7 root     root           247 Aug 27 11:05 lib
+drwxr-xr-x    5 root     root            44 Aug 27 11:05 media
+drwxr-xr-x    2 root     root             6 Aug 27 11:05 mnt
+drwxr-xr-x    2 root     root             6 Aug 27 11:05 opt
+dr-xr-xr-x  118 root     root             0 Oct 31 12:20 proc
+drwx------    1 root     root            26 Oct 31 12:37 root
+drwxr-xr-x    1 root     root            21 Oct 31 12:20 run
+drwxr-xr-x    2 root     root          4096 Aug 27 11:05 sbin
+drwxr-xr-x    2 root     root             6 Aug 27 11:05 srv
+dr-xr-xr-x   13 root     root             0 Oct 31 11:55 sys
+drwxrwxrwt    2 root     root             6 Aug 27 11:05 tmp
+drwxr-xr-x    7 root     root            66 Aug 27 11:05 usr
+drwxr-xr-x   12 root     root           137 Aug 27 11:05 var
+```
+
+
 
 ## Etcd
 https://alibaba-cloud.medium.com/getting-started-with-kubernetes-etcd-a26cba0b4258 
@@ -189,4 +247,7 @@ https://github.com/cri-o/cri-o/issues/1284
 gRPC vs REST:
 https://cloud.google.com/blog/products/api-management/understanding-grpc-openapi-and-rest-and-when-to-use-them
 
-Static 
+Static
+https://kubernetes.io/docs/tasks/configure-pod-container/static-pod/
+
+Kubelet HTTP endpont
