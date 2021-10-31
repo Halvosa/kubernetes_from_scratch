@@ -251,3 +251,6 @@ Static
 https://kubernetes.io/docs/tasks/configure-pod-container/static-pod/
 
 Kubelet HTTP endpont
+
+# Credits
+These notes are based on Clarke Vennerbeck's video on how to deploy a single-machine Kubernetes cluster from scratch: https://www.youtube.com/watch?v=t4H6hdvB9iQ&t=2435s
