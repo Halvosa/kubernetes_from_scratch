@@ -176,7 +176,7 @@ We now have a running container, but kubelet and crio do not provide us with any
 ### Crictl
 _https://github.com/kubernetes-sigs/cri-tools/_
 
-"crictl provides a CLI for CRI-compatible container runtimes. This allows the CRI runtime developers to debug their runtime without needing to set up Kubernetes components." (https://github.com/kubernetes-sigs/cri-tools/blob/master/docs/crictl.md)
+_"crictl provides a CLI for CRI-compatible container runtimes. This allows the CRI runtime developers to debug their runtime without needing to set up Kubernetes components."_ (https://github.com/kubernetes-sigs/cri-tools/blob/master/docs/crictl.md)
 
 Installing crictl is easy. Just download the binary and move it to _/usr/local/bin_. (/usr/bin is for binaries that are managed by the package manager, while /usr/local/bin is for binaries that are not so, e.g., locally compiled binaries.)
 
@@ -221,9 +221,32 @@ drwxr-xr-x   12 root     root           137 Aug 27 11:05 var
 ```
 
 
-
 ## Etcd
-https://alibaba-cloud.medium.com/getting-started-with-kubernetes-etcd-a26cba0b4258 
+_https://github.com/etcd-io/etcd/releases_
+
+For simplicity, we will install etcd on k8s-master. In a large production environment, one would instead install etcd as a cluster of several VMs.
+
+```console
+halvor@halvor-NUC:~/lab/Vagrant$ vagrant ssh k8s-master
+Last login: Wed Oct  6 18:02:54 2021 from 192.168.121.1
+[vagrant@k8s-master ~]$ sudo su -
+[root@k8s-master ~]# yum install -y wget
+[root@k8s-master ~]# wget https://github.com/etcd-io/etcd/releases/download/v3.5.1/etcd-v3.5.1-linux-amd64.tar.gz
+[root@k8s-master ~]# tar -xvf etcd-v3.5.1-linux-amd64.tar.gz
+[root@k8s-master ~]# mv etcd-v3.5.1-linux-amd64/etcd{,ctl} /usr/local/bin/
+```
+
+We could make etcd a service by creating a systemd unit file, but for now, let us just run etcd directly as a background job. As with kubelet, there are tons of configuration flags available, but our goal here is to keep it simple and focus on the core principles. 
+
+```console
+[root@k8s-master ~]# mkdir -p /var/log/etcd
+[root@k8s-master ~]# etcd &> /var/log/etcd/etcd.log &
+```
+
+
+
+
+
 ## Links
 Kubernetes binaries:
 https://www.downloadkubernetes.com/ 
@@ -247,10 +270,12 @@ https://github.com/cri-o/cri-o/issues/1284
 gRPC vs REST:
 https://cloud.google.com/blog/products/api-management/understanding-grpc-openapi-and-rest-and-when-to-use-them
 
-Static
+Static pods
 https://kubernetes.io/docs/tasks/configure-pod-container/static-pod/
 
 Kubelet HTTP endpont
 
-# Credits
-These notes are based on Clarke Vennerbeck's video on how to deploy a single-machine Kubernetes cluster from scratch: https://www.youtube.com/watch?v=t4H6hdvB9iQ&t=2435s
+Etcd:
+https://alibaba-cloud.medium.com/getting-started-with-kubernetes-etcd-a26cba0b4258 
+https://etcd.io/docs/v3.4/op-guide/configuration/ (configuration flags)
+https://serverfault.com/questions/1001778/own-etcd-cluster-for-kubernetes
