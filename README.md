@@ -226,14 +226,16 @@ Last login: Wed Oct  6 18:02:54 2021 from 192.168.121.1
 [root@k8s-master ~]# mv etcd-v3.5.1-linux-amd64/etcd{,ctl} /usr/local/bin/
 ```
 
-We could make etcd a service by creating a systemd unit file, but for now, let us just run etcd directly as a background job. As with kubelet, there are tons of configuration flags available, but our goal here is to keep it simple and focus on the core principles. 
+We could make etcd a service by creating a systemd service file, but for now, let us just run etcd directly as a background job. As with kubelet, there are tons of configuration flags available, but our goal here is to keep it simple and focus on the core principles.
 
 ```console
 [root@k8s-master ~]# mkdir -p /var/log/etcd
-[root@k8s-master ~]# etcd &> /var/log/etcd/etcd.log &
+[root@k8s-master ~]# etcd --listen-client-urls=http://192.168.50.10:2379,http://localhost:2379 &> /var/log/etcd/etcd.log &
 [root@k8s-master ~]# etcdctl --cluster=true endpoint health
 http://localhost:2379 is healthy: successfully committed proposal: took = 2.999093ms
 ```
+
+Like with kubelet, we can create a configuration file and feed it to etcd via the parameter --config-file. A sample configuration file can be found here: https://github.com/etcd-io/etcd/blob/release-3.4/etcd.conf.yml.sample. The various flags are listed and explained here: https://etcd.io/docs/v3.4/op-guide/configuration/. Since we are not setting up a full etcd cluser (only one member) and are keeping it simple, we only need to specify the URL that etcd should listen for client requests on. We do this via the parameter _--listen-client-urls_. (The IP address of k8s-master is 192.168.50.10, and the standard port for client requests is 2379.) 
 
 ## Kube-apiserver
 kube-apiserver is the front end to the control plane. It exposes a REST API through which we can administer the Kubernetes cluster. Since kube-apiserver is a part of the control plane, we will install and run it on k8s-master. In a large scale production environment, you could have several kube-apiservers and load balance between them.
@@ -287,6 +289,8 @@ Etcd:
 https://alibaba-cloud.medium.com/getting-started-with-kubernetes-etcd-a26cba0b4258 
 https://etcd.io/docs/v3.4/op-guide/configuration/ (configuration flags)
 https://serverfault.com/questions/1001778/own-etcd-cluster-for-kubernetes
+https://etcd.io/docs/v2.3/clustering/
+https://learnk8s.io/etcd-kubernetes
 
 ## Credits
 These notes are based on Clarke Vennerbeck's video on how to deploy a single-machine Kubernetes cluster from scratch: https://www.youtube.com/watch?v=t4H6hdvB9iQ&t=2435s
