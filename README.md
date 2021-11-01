@@ -229,13 +229,20 @@ Last login: Wed Oct  6 18:02:54 2021 from 192.168.121.1
 We could make etcd a service by creating a systemd service file, but for now, let us just run etcd directly as a background job. As with kubelet, there are tons of configuration flags available, but our goal here is to keep it simple and focus on the core principles.
 
 ```console
-[root@k8s-master ~]# mkdir -p /var/log/etcd
-[root@k8s-master ~]# etcd --listen-client-urls=http://192.168.50.10:2379,http://localhost:2379 &> /var/log/etcd/etcd.log &
+[root@k8s-master ~]# mkdir /var/log/etcd
+[root@k8s-master ~]# vi start_etcd.sh
+[root@k8s-master ~]# cat start_etcd.sh
+#!/bin/bash
+etcd --listen-client-urls=http://192.168.50.10:2379,http://localhost:2379 \
+  --advertise-client-urls=http://192.168.50.10:2379 \
+  &> /var/log/etcd/etcd.log
+[root@k8s-master ~] chmod o+x start_etcd.sh
+[root@k8s-master ~]# ./start_etcd.sh &
 [root@k8s-master ~]# etcdctl --cluster=true endpoint health
 http://localhost:2379 is healthy: successfully committed proposal: took = 2.999093ms
 ```
 
-Like with kubelet, we can create a configuration file and feed it to etcd via the parameter --config-file. A sample configuration file can be found here: https://github.com/etcd-io/etcd/blob/release-3.4/etcd.conf.yml.sample. The various flags are listed and explained here: https://etcd.io/docs/v3.4/op-guide/configuration/. Since we are not setting up a full etcd cluser (only one member) and are keeping it simple, we only need to specify the URL that etcd should listen for client requests on. We do this via the parameter _--listen-client-urls_. (The IP address of k8s-master is 192.168.50.10, and the standard port for client requests is 2379.) 
+Like with kubelet, we can create a configuration file and feed it to etcd via the parameter --config-file. A sample configuration file can be found here: https://github.com/etcd-io/etcd/blob/release-3.4/etcd.conf.yml.sample. The various flags are listed and explained here: https://etcd.io/docs/v3.4/op-guide/configuration/. Since we are not setting up a full etcd cluser (only one member) and are keeping it simple, we only need to specify the URL that etcd should listen for client requests on. We do this via the parameter _--listen-client-urls_. (The IP address of k8s-master is 192.168.50.10, and the standard port for client requests is 2379.) However, even though we only have one member in our etcd "cluster", etcd expects us to specify the client URL for this member to the other (non-existing) members of the cluster via the parameter _--advertise-client-urls_. If we do not, we will get an error.
 
 ## Kube-apiserver
 kube-apiserver is the front end to the control plane. It exposes a REST API through which we can administer the Kubernetes cluster. Since kube-apiserver is a part of the control plane, we will install and run it on k8s-master. In a large scale production environment, you could have several kube-apiservers and load balance between them.
@@ -243,7 +250,16 @@ kube-apiserver is the front end to the control plane. It exposes a REST API thro
 ```console
 [root@k8s-master ~]# wget https://dl.k8s.io/v1.21.6/bin/linux/amd64/kube-apiserver
 [root@k8s-master ~]# mv kube-apiserver /usr/local/bin/ ; chmod o+x /usr/local/bin/kube-apiserver
-
+[root@k8s-master ~]# vi start_kube-apiserver.sh
+[root@k8s-master ~]# cat start_kube-apiserver.sh
+#!/bin/bash
+kube-apiserver --etcd-servers=http://localhost:2379 \
+  --service-cluster-ip-range= \
+  --bind-address= \
+  --insecure-bind-address= \
+  &> /var/log/kubernetes/kube-apiserver.log
+[root@k8s-master ~]# chmod o+x start_kube-apiserver.sh
+[root@k8s-master ~]# ./start_kube-apiserver.sh &
 ```
 
 ## Kubectl
