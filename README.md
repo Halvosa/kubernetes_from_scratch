@@ -1,4 +1,4 @@
-# Kubernetes From Scratch
+# DRAFT - Kubernetes From Scratch
 
 *Goal: To become familiar with the inner workings of a Kubernetes cluster.*
 
