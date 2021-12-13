@@ -254,13 +254,15 @@ kube-apiserver is the front end to the control plane. It exposes a REST API thro
 [root@k8s-master ~]# cat start_kube-apiserver.sh
 #!/bin/bash
 kube-apiserver --etcd-servers=http://localhost:2379 \
-  --service-cluster-ip-range= \
-  --bind-address= \
-  --insecure-bind-address= \
+  --service-cluster-ip-range=10.0.0.0/16 \
   &> /var/log/kubernetes/kube-apiserver.log
 [root@k8s-master ~]# chmod o+x start_kube-apiserver.sh
 [root@k8s-master ~]# ./start_kube-apiserver.sh &
 ```
+
+Here, `service-cluster-ip-range` is the range of IP-addresses to use when assigning IP-addresses to services. Kube-apiserver communicates with the cluster by using HTTPS with authentication and authorization. By default, kube-apiserver listens on port 6443 on all interfaces. If we wanted to restrict the communication to a specific interface, we could supply the IP-address of that interface via the parameter `--bind-address`. We could also choose a different port using `--secure-port`. The given interface(s) must be reachable by the rest of the cluster, and by CLI/web clients.
+
+Authorization:
 
 ## Kubectl
 
