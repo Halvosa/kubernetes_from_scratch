@@ -73,3 +73,9 @@ Your new CA certificate file for publishing is at:
 ```console
 [vagrant@k8s-master easy-rsa]$ ./easyrsa show-ca
 ```
+
+
+# Links
+Easy-RSA
+* https://easy-rsa.readthedocs.io/en/latest/
+* https://easy-rsa.readthedocs.io/en/latest/advanced/   (Configuration)
