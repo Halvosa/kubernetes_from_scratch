@@ -14,22 +14,27 @@ The process of establishing a TLS connection between a server and a client goes 
 # Setting up a CA
 Easy-RSA is a utility for managing X.509 PKI, or Public Key Infrastructure. Crypto-related tasks use openssl as the functional backend.
 
-Easy-rsa should be "installed" and ran as a non-root user, since root is not required.
-
 ```
 Easy-RSA's main program is a script, supported by a couple of config files. As such, there is no formal "installation" required. Preparing to use Easy-RSA is as simple as downloading the compressed package (.tar.gz for Linux/Unix or .zip for Windows) and extract it to a location of your choosing. 
 
 You should install and run Easy-RSA as a non-root (non-Administrator) account as root access is not required.
-```
 
 Easy-RSA 3 no longer needs any configuration file prior to operation, unlike earlier versions. 
+```
+We will just go with the default configuration. However, a list of available settings can be found in Easy-RSA's advanced documentation: https://easy-rsa.readthedocs.io/en/latest/advanced/. We could for example specify certificate details such as email, city, state, country, and issued cert expiration date, as well as more technical crypto-related setting.
 
+First, we download the latest Easy-RSA release from the offical github repo and extract it to ~/easy-rsa. This folder will contain everything related to the CA. (The tar archive can techically be extracted anywhere you see fit, but somewhere in the home directory of the user responsible for the CA is a natural choice.) Only the user that controls the CA should have access to the CA, and therefore we set the permissions on the directory to 700.
 
 ```console
 [vagrant@k8s-master ~]$ wget https://github.com/OpenVPN/easy-rsa/releases/download/v3.0.8/EasyRSA-3.0.8.tgz
 [vagrant@k8s-master ~]$ tar -xf EasyRSA-3.0.8.tgz
 [vagrant@k8s-master ~]$ mv EasyRSA-3.0.8 easy-rsa
 [vagrant@k8s-master ~]$ chmod 700 easy-rsa/
+```
+
+Next, we initialize a new PKI (Public Key Infrastructure). All it does is creating a directory called pki containing some default directories and files.
+
+```console
 [vagrant@k8s-master ~]$ cd easy-rsa
 [vagrant@k8s-master easy-rsa]$ ./easyrsa init-pki
 
