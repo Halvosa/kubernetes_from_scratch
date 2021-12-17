@@ -12,6 +12,9 @@ The process of establishing a TLS connection between a server and a client goes 
 ## 
 
 # Setting up a CA
+
+We will be setting up a CA on the k8s-master VM, where the entire control plane resides. In a large scale production environment, it might be best to use a separate server for the CA only, and keep it mostly offline 
+
 Easy-RSA is a utility for managing X.509 PKI, or Public Key Infrastructure. Crypto-related tasks use openssl as the functional backend.
 
 ```
@@ -21,7 +24,7 @@ You should install and run Easy-RSA as a non-root (non-Administrator) account as
 
 Easy-RSA 3 no longer needs any configuration file prior to operation, unlike earlier versions. 
 ```
-We will just go with the default configuration. However, a list of available settings can be found in Easy-RSA's advanced documentation: https://easy-rsa.readthedocs.io/en/latest/advanced/. We could for example specify certificate details such as email, city, state, country, and issued cert expiration date, as well as more technical crypto-related setting.
+We will just go with the default configuration. However, a list of available settings can be found in Easy-RSA's advanced documentation: https://easy-rsa.readthedocs.io/en/latest/advanced/. We could for example specify certificate details such as email, city, state, country, and issued cert expiration date, as well as more technical crypto-related setting. Settings can be set through CLI flags, environment variables, or through a config file.
 
 First, we download the latest Easy-RSA release from the offical github repo and extract it to ~/easy-rsa. This folder will contain everything related to the CA. (The tar archive can techically be extracted anywhere you see fit, but somewhere in the home directory of the user responsible for the CA is a natural choice.) Only the user that controls the CA should have access to the CA, and therefore we set the permissions on the directory to 700.
 
@@ -40,9 +43,6 @@ Next, we initialize a new PKI (Public Key Infrastructure). All it does is creati
 
 init-pki complete; you may now create a CA or requests.
 Your newly created PKI dir is: /home/vagrant/easy-rsa/pki
-```
-
-```console
 [vagrant@k8s-master easy-rsa]$ ll pki/
 total 16
 -rw-------. 1 vagrant vagrant 4616 Dec 15 20:42 openssl-easyrsa.cnf
@@ -50,6 +50,12 @@ drwx------. 2 vagrant vagrant    6 Dec 15 20:42 private
 drwx------. 2 vagrant vagrant    6 Dec 15 20:42 reqs
 -rw-------. 1 vagrant vagrant 4650 Dec 15 20:42 safessl-easyrsa.cnf
 ```
+The directory `private` contains private keys generated locally. The `reqs` directory contains locally created and imported CSR's. (When some external host needs a certificate, they send a Certificate Signing Request to the CA, which then must be imported to the reqs folder such that Easy-RSA knows about it. The request file must be a standard CSR in PKCS#10 format.) The `.cnf` files are configuration files for the underlying cryptography tools that Easy-RSA is built around.
+
+The next command builds the CA according to the configured settings. This simply means that a private key `ca.key` and a certificate `ca.crt` are created. The directories issued, renewed and revoked are also created, as well as a few other files. (WHAT ARE THESE FILES?)
+
+* Password?
+* Common name?
 
 ```console
 [vagrant@k8s-master easy-rsa]$ ./easyrsa build-ca
