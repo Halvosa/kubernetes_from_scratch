@@ -78,6 +78,9 @@ Last login: Fri Oct 29 18:41:48 2021 from 192.168.121.1
 CentOS Stream release 8
 ```
 
+## Certificates
+The individual components of kubernetes communicate with eachother over TLS. Each component must therefore have its own certificate. If we were to use kubeadm to set up the cluster, these certificates would have been created automatically for us. Let us, however, create our own certificates, so that we learn how it works. We have done exactly that in [CA_basics.md](/CA/CA_basics.md), so make sure to check that out before proceeding with this article.
+
 ## CRI-O Runtime
 _https://cri-o.io/_
 
@@ -309,6 +312,9 @@ https://etcd.io/docs/v3.4/op-guide/configuration/ (configuration flags)
 https://serverfault.com/questions/1001778/own-etcd-cluster-for-kubernetes
 https://etcd.io/docs/v2.3/clustering/
 https://learnk8s.io/etcd-kubernetes
+
+Certificates:
+https://kubernetes.io/docs/setup/best-practices/certificates/
 
 ## Credits
 These notes are based on Clarke Vennerbeck's video on how to deploy a single-machine Kubernetes cluster from scratch: https://www.youtube.com/watch?v=t4H6hdvB9iQ&t=2435s
