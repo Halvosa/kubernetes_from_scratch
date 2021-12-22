@@ -124,7 +124,7 @@ crio version 1.21.3
 [root@node-1 ~]# yum install -y wget
 [root@node-1 ~]# wget https://dl.k8s.io/v1.21.6/bin/linux/amd64/kubelet
 [root@node-1 ~]# mv kubelet /usr/local/bin
-[root@node-1 ~]# chmod o+x /usr/local/bin/kubelet
+[root@node-1 ~]# chmod u+x /usr/local/bin/kubelet
 ```
 
 ### Running Kubelet
@@ -142,7 +142,7 @@ kubelet --pod-manifest-path=/etc/kubernetes/manifests \
  --container-runtime=remote \
  --container-runtime-endpoint=unix:///var/run/crio/crio.sock \
  &> /var/log/containers/kubelet.log
-[root@node-1 ~]# chmod o+x start_kubelet.sh
+[root@node-1 ~]# chmod u+x start_kubelet.sh
 [root@node-1 ~]# ./start_kubelet &
 [1] 2915
 ```
@@ -239,7 +239,7 @@ We could make etcd a service by creating a systemd service file, but for now, le
 etcd --listen-client-urls=http://192.168.50.10:2379,http://localhost:2379 \
   --advertise-client-urls=http://192.168.50.10:2379 \
   &> /var/log/etcd/etcd.log
-[root@k8s-master ~] chmod o+x start_etcd.sh
+[root@k8s-master ~] chmod u+x start_etcd.sh
 [root@k8s-master ~]# ./start_etcd.sh &
 [root@k8s-master ~]# etcdctl --cluster=true endpoint health
 http://localhost:2379 is healthy: successfully committed proposal: took = 2.999093ms
@@ -252,7 +252,7 @@ kube-apiserver is the front end to the control plane. It exposes a REST API thro
 
 ```console
 [root@k8s-master ~]# wget https://dl.k8s.io/v1.21.6/bin/linux/amd64/kube-apiserver
-[root@k8s-master ~]# mv kube-apiserver /usr/local/bin/ ; chmod o+x /usr/local/bin/kube-apiserver
+[root@k8s-master ~]# mv kube-apiserver /usr/local/bin/ && chmod u+x /usr/local/bin/kube-apiserver
 [root@k8s-master ~]# vi start_kube-apiserver.sh
 [root@k8s-master ~]# cat start_kube-apiserver.sh
 #!/bin/bash
@@ -268,6 +268,30 @@ Here, `service-cluster-ip-range` is the range of IP-addresses to use when assign
 Authorization:
 
 ## Kubectl
+
+```console
+[vagrant@k8s-master ~]$ wget https://dl.k8s.io/v1.21.6/bin/linux/amd64/kubectl
+[vagrant@k8s-master ~]$ sudo mv kubectl /usr/local/bin/ && chmod a+x /usr/local/bin/kubectl
+[vagrant@k8s-master ~]$ sudo chown root:root /usr/local/bin/kubectl
+[vagrant@k8s-master ~]$ kubectl config set-cluster home-lab --server=https://localhost
+```
+
+Using the config subcommand automatically created a kubeconfig file at ~/.kube/config.
+
+```console
+[vagrant@k8s-master ~]$ cat .kube/config
+apiVersion: v1
+clusters:
+- cluster:
+    server: https://localhost
+  name: home-lab
+contexts: null
+current-context: ""
+kind: Config
+preferences: {}
+users: null
+
+```
 
 ## Kube-controller-manager
 
