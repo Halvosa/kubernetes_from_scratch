@@ -258,6 +258,9 @@ kube-apiserver is the front end to the control plane. It exposes a REST API thro
 #!/bin/bash
 kube-apiserver --etcd-servers=http://localhost:2379 \
   --service-cluster-ip-range=10.0.0.0/16 \
+  --client-ca-file=/home/vagrant/easy-rsa/pki/ca.crt \
+  --tls-cert-file=/home/vagrant/easy-rsa/pki/issued/server.crt \
+  --tls-private-key-file=/home/vagrant/easy-rsa/pki/private/server.key \
   &> /var/log/kubernetes/kube-apiserver.log
 [root@k8s-master ~]# chmod o+x start_kube-apiserver.sh
 [root@k8s-master ~]# ./start_kube-apiserver.sh &
