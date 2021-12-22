@@ -74,7 +74,7 @@ There are quite a few fields but you can leave some blank
 For some fields there will be a default value,
 If you enter '.', the field will be left blank.
 -----
-Common Name (eg: your user, host, or server name) [Easy-RSA CA]:cluster.local
+Common Name (eg: your user, host, or server name) [Easy-RSA CA]:kubernetes-ca
 
 CA creation complete and you may now import and sign cert requests.
 Your new CA certificate file for publishing is at:
@@ -85,8 +85,51 @@ Your new CA certificate file for publishing is at:
 [vagrant@k8s-master easy-rsa]$ ./easyrsa show-ca
 ```
 
+Ansible for å dele ut nøkler?
+
+```console
+halvor@halvor-NUC:~/lab/Vagrant$ vagrant ssh node-1
+[vagrant@node-1 ~]$ sudo vi /etc/ssh/sshd_config 
+_...Set "PasswordAuthentication yes"..._
+[vagrant@node-1 ~]$ sudo systemctl reload sshd
+[vagrant@node-1 ~]$ sudo mkdir /usr/local/share/ca-certificates
+```
+
+Now copy ca.crt from k8s-master to node-1 using scp.
+
+```console
+[vagrant@k8s-master easy-rsa]$ sudo scp pki/ca.crt 192.168.50.11:/etc/pki/ca-trust/source/anchors/kubernetes.crt
+[vagrant@node-1 ~]$ sudo update-ca-trust extract
+```
+
+```console
+[vagrant@k8s-master easy-rsa]$ ./easyrsa help options
+[vagrant@k8s-master easy-rsa]$ ./easyrsa help altname
+```
+
+```console
+[vagrant@k8s-master easy-rsa]$ ./easyrsa --subject-alt-name="IP:192.168.50.10,"\
+"DNS:kubernetes,"\
+"DNS:kubernetes.default,"\
+"DNS:kubernetes.default.svc,"\
+"DNS:kubernetes.default.svc.cluster,"\
+"DNS:kubernetes.default.svc.cluster.local" \
+--days=10000 \
+build-server-full server nopass
+```
+Hvorfor alle disse DNS-greiene???
+
+--client-ca-file=/home/vagrant/easy-rsa/pki/ca.crt
+--tls-cert-file=/yourdirectory/server.crt
+--tls-private-key-file=/yourdirectory/server.key
+
+
 
 # Links
 Easy-RSA
 * https://easy-rsa.readthedocs.io/en/latest/
 * https://easy-rsa.readthedocs.io/en/latest/advanced/   (Configuration)
+
+* https://kubernetes.io/docs/tasks/administer-cluster/certificates/
+* https://kubernetes.io/docs/setup/best-practices/certificates/
+
