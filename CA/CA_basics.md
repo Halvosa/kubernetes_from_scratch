@@ -139,7 +139,7 @@ Now copy ca.crt from k8s-master to node-1 using scp.
 ```console
 [root@k8s-master ~]# openssl genrsa -out sa.key 2048
 [root@k8s-master ~]# openssl rsa -in sa.key -pubout -out sa.pub
-[root@k8s-master ~]# cp sa.{key,pub} /etc/kubernetes/pki/
+[root@k8s-master ~]# mv sa.{key,pub} /etc/kubernetes/pki/
 ```
 
 
