@@ -9,7 +9,6 @@ The process of establishing a TLS connection between a server and a client goes 
 3. The server replies and provides its digital certificate. The certficate is a file that contains the server's public key and various other information like .... The certificate is digitally signed by a Certificate Authority, so as long as the client trusts the CA, it should be able to trust the certificate. (More on how the client can trust the CA and the signed certificate later.)
 4. When the The next step is for the client and the server to agree on a symmetric session key in a secure manner. There are several algorithms for this. A simple one is that the client encrypts a random number with the server's public key and then sends it over to the server. The server should be the only one that can read the random number, because it should be the only entity that has the private key associated with the public key in the server's certificate. Next, both the server and the client use the same random number to generate the same symmetric key. A much more secure exchange algorithm is used today and is based on the Diffie-Hellman key exchange scheme, where both the server and the client has a public and private key pair.
 
-## 
 
 # Creating the Kubernetes CA
 
@@ -90,7 +89,7 @@ Let us now copy these keys/certificates to /etc/kubernetes/pki:
 [root@k8s-master ~]# cp /home/vagrant/easy-rsa/pki/{ca.crt,private/ca.key} /etc/kubernetes/pki/
 ```
 
-## Creating the kube-apiserver Server Certificate
+# Creating the kube-apiserver Server Certificate
 
 ```console
 [vagrant@k8s-master easy-rsa]$ ./easyrsa help options
@@ -105,12 +104,18 @@ Let us now copy these keys/certificates to /etc/kubernetes/pki:
 "DNS:kubernetes.default.svc.cluster,"\
 "DNS:kubernetes.default.svc.cluster.local" \
 --days=10000 \
-build-server-full server nopass
+build-server-full kube-apiserver nopass
 ```
+If the flag `--req-cn=CN` is not given, the CN will be the same as the key basename.  
+
 _(Hvorfor alle disse DNS-greiene???)_
 
+```console
+[root@k8s-master ~]# cp /home/vagrant/easy-rsa/pki/{issued/kube-apiserver.crt,private/kube-apiserver.key} /etc/kubernetes/pki/
+```
 
-## Distributing the Kubernetes CA Cert to Nodes
+
+# Distributing the Kubernetes CA Cert to Nodes
 
 _(Ansible for å dele ut nøkler??)_
 
@@ -129,7 +134,13 @@ Now copy ca.crt from k8s-master to node-1 using scp.
 [vagrant@node-1 ~]$ sudo update-ca-trust extract
 ```
 
+# Creating the Service Account Issuer Keypair
 
+```console
+[root@k8s-master ~]# openssl genrsa -out sa.key 2048
+[root@k8s-master ~]# openssl rsa -in sa.key -pubout -out sa.pub
+[root@k8s-master ~]# cp sa.{key,pub} /etc/kubernetes/pki/
+```
 
 
 
