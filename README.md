@@ -261,6 +261,7 @@ kube-apiserver --etcd-servers=http://localhost:2379 \
   --client-ca-file=/home/vagrant/easy-rsa/pki/ca.crt \
   --tls-cert-file=/home/vagrant/easy-rsa/pki/issued/server.crt \
   --tls-private-key-file=/home/vagrant/easy-rsa/pki/private/server.key \
+  --authorization-mode=RBAC \
   &> /var/log/kubernetes/kube-apiserver.log
 [root@k8s-master ~]# chmod o+x start_kube-apiserver.sh
 [root@k8s-master ~]# ./start_kube-apiserver.sh &
@@ -268,7 +269,13 @@ kube-apiserver --etcd-servers=http://localhost:2379 \
 
 Here, `service-cluster-ip-range` is the range of IP-addresses to use when assigning IP-addresses to services. Kube-apiserver communicates with the cluster by using HTTPS with authentication and authorization. By default, kube-apiserver listens on port 6443 on all interfaces. If we wanted to restrict the communication to a specific interface, we could supply the IP-address of that interface via the parameter `--bind-address`. We could also choose a different port using `--secure-port`. The given interface(s) must be reachable by the rest of the cluster, and by CLI/web clients.
 
-Authorization:
+"All Kubernetes clusters have two categories of users: service accounts managed by Kubernetes, and normal users. It is assumed that a cluster-independent service manages normal users... In this regard, Kubernetes does not have objects which represent normal user accounts. Normal users cannot be added to a cluster through an API call. Even though a normal user cannot be added via an API call, any user that presents a valid certificate signed by the cluster's certificate authority (CA) is considered authenticated. In this configuration, Kubernetes determines the username from the common name field in the 'subject' of the cert (e.g., "/CN=bob"). From there, the role based access control (RBAC) sub-system would determine whether the user is authorized to perform a specific operation on a resource." (https://kubernetes.io/docs/reference/access-authn-authz/authentication/)
+
+"In contrast, service accounts are users managed by the Kubernetes API. They are bound to specific namespaces, and created automatically by the API server or manually through API calls. Service accounts are tied to a set of credentials stored as Secrets, which are mounted into pods allowing in-cluster processes to talk to the Kubernetes API. API requests are tied to either a normal user or a service account, or are treated as anonymous requests. This means every process inside or outside the cluster, from a human user typing kubectl on a workstation, to kubelets on nodes, to members of the control plane, must authenticate when making requests to the API server, or be treated as an anonymous user." (https://kubernetes.io/docs/reference/access-authn-authz/authentication/)
+
+" Client certificate authentication is enabled by passing the --client-ca-file=SOMEFILE option to API server. The referenced file must contain one or more certificate authorities to use to validate client certificates presented to the API server. If a client certificate is presented and verified, the common name of the subject is used as the user name for the request. As of Kubernetes 1.4, client certificates can also indicate a user's group memberships using the certificate's organization fields. To include multiple group memberships for a user, include multiple organization fields in the certificate." (https://kubernetes.io/docs/reference/access-authn-authz/authentication/)
+
+"Kubernetes authorizes API requests using the API server. It evaluates all of the request attributes against all policies and allows or denies the request. All parts of an API request must be allowed by some policy in order to proceed. This means that permissions are denied by default." (https://kubernetes.io/docs/reference/access-authn-authz/authorization/)
 
 ## Kubectl
 
@@ -342,6 +349,11 @@ https://learnk8s.io/etcd-kubernetes
 
 Certificates:
 https://kubernetes.io/docs/setup/best-practices/certificates/
+https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet-tls-bootstrapping/
+
+Kube-apiserver:
+https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
+https://kubernetes.io/docs/reference/access-authn-authz/authentication/
 
 ## Credits
 These notes are based on Clarke Vennerbeck's video on how to deploy a single-machine Kubernetes cluster from scratch: https://www.youtube.com/watch?v=t4H6hdvB9iQ&t=2435s
