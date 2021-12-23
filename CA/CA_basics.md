@@ -11,7 +11,7 @@ The process of establishing a TLS connection between a server and a client goes 
 
 ## 
 
-# Setting up a CA
+# Creating the Kubernetes CA
 
 We will be setting up a CA on the k8s-master VM, where the entire control plane resides. In a large scale production environment, it might be best to use a separate server for the CA only, and keep it mostly offline 
 
@@ -79,28 +79,18 @@ Common Name (eg: your user, host, or server name) [Easy-RSA CA]:kubernetes-ca
 CA creation complete and you may now import and sign cert requests.
 Your new CA certificate file for publishing is at:
 /home/vagrant/easy-rsa/pki/ca.crt
-```
 
-```console
 [vagrant@k8s-master easy-rsa]$ ./easyrsa show-ca
 ```
 
-Ansible for å dele ut nøkler?
+Let us now copy these keys/certificates to /etc/kubernetes/pki:
 
 ```console
-halvor@halvor-NUC:~/lab/Vagrant$ vagrant ssh node-1
-[vagrant@node-1 ~]$ sudo vi /etc/ssh/sshd_config 
-_...Set "PasswordAuthentication yes"..._
-[vagrant@node-1 ~]$ sudo systemctl reload sshd
-[vagrant@node-1 ~]$ sudo mkdir /usr/local/share/ca-certificates
+[root@k8s-master ~]# mkdir -p /etc/kubernetes/pki/
+[root@k8s-master ~]# cp /home/vagrant/easy-rsa/pki/{ca.crt,private/ca.key} /etc/kubernetes/pki/
 ```
 
-Now copy ca.crt from k8s-master to node-1 using scp.
-
-```console
-[vagrant@k8s-master easy-rsa]$ sudo scp pki/ca.crt 192.168.50.11:/etc/pki/ca-trust/source/anchors/kubernetes.crt
-[vagrant@node-1 ~]$ sudo update-ca-trust extract
-```
+## Creating the kube-apiserver Server Certificate
 
 ```console
 [vagrant@k8s-master easy-rsa]$ ./easyrsa help options
@@ -117,11 +107,29 @@ Now copy ca.crt from k8s-master to node-1 using scp.
 --days=10000 \
 build-server-full server nopass
 ```
-Hvorfor alle disse DNS-greiene???
+_(Hvorfor alle disse DNS-greiene???)_
 
---client-ca-file=/home/vagrant/easy-rsa/pki/ca.crt
---tls-cert-file=/yourdirectory/server.crt
---tls-private-key-file=/yourdirectory/server.key
+
+## Distributing the Kubernetes CA Cert to Nodes
+
+_(Ansible for å dele ut nøkler??)_
+
+```console
+halvor@halvor-NUC:~/lab/Vagrant$ vagrant ssh node-1
+[vagrant@node-1 ~]$ sudo vi /etc/ssh/sshd_config 
+_...Set "PasswordAuthentication yes"..._
+[vagrant@node-1 ~]$ sudo systemctl reload sshd
+[vagrant@node-1 ~]$ sudo mkdir /usr/local/share/ca-certificates
+```
+
+Now copy ca.crt from k8s-master to node-1 using scp.
+
+```console
+[vagrant@k8s-master easy-rsa]$ sudo scp pki/ca.crt 192.168.50.11:/etc/pki/ca-trust/source/anchors/kubernetes.crt
+[vagrant@node-1 ~]$ sudo update-ca-trust extract
+```
+
+
 
 
 
