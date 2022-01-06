@@ -65,6 +65,63 @@ A virtual network (veth(4)) device pair provides a pipe-like
        the veth(4) devices that it contains are destroyed.
       
       
-Just like two physical hosts have their own NICs and network stack that can communicate via a physical switch, we can create virtual NICs in two or more network namespaces that we can hook up to a virtual switch/bridge to enable communication between the namespaces/individual network stacks.
 
-[vagrant@test-1 ~]$ ip link add br-ns type bridge
+
+https://developers.redhat.com/blog/2018/10/22/introduction-to-linux-interfaces-for-virtual-networking#vlan 
+
+```console
+[vagrant@test-1 ~]$ sudo ip link add veth0 type veth peer name veth1
+[vagrant@test-1 ~]$ ip link
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+    link/ether 52:54:00:b2:8e:47 brd ff:ff:ff:ff:ff:ff
+3: eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+    link/ether 52:54:00:9a:ad:f8 brd ff:ff:ff:ff:ff:ff
+4: veth1@veth0: <BROADCAST,MULTICAST,M-DOWN> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+    link/ether fa:dd:05:6f:a0:48 brd ff:ff:ff:ff:ff:ff
+5: veth0@veth1: <BROADCAST,MULTICAST,M-DOWN> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+    link/ether 02:6c:1d:ad:f4:14 brd ff:ff:ff:ff:ff:ff
+[vagrant@test-1 ~]$ sudo ip link set veth1 netns container
+[vagrant@test-1 ~]$ ip link
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+    link/ether 52:54:00:b2:8e:47 brd ff:ff:ff:ff:ff:ff
+3: eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+    link/ether 52:54:00:9a:ad:f8 brd ff:ff:ff:ff:ff:ff
+5: veth0@if5: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+    link/ether 02:6c:1d:ad:f4:14 brd ff:ff:ff:ff:ff:ff link-netns container
+```
+
+Inside the container namespace we now have
+
+```console
+[root@test-1 vagrant]# ip link
+1: lo: <LOOPBACK> mtu 65536 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+5: veth1@if6: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+    link/ether fa:dd:05:6f:a0:48 brd ff:ff:ff:ff:ff:ff link-netnsid 0
+```
+
+Now, let's add IP addresses and bring the interfaces to the up state:
+
+```console
+[vagrant@test-1 ~]$ sudo ip addr add 10.0.0.2/24 dev veth0
+[vagrant@test-1 ~]$ sudo ip link set veth0 up
+...and inside the container namespace...
+[root@test-1 vagrant]# ip addr add 10.0.0.3/24 dev veth1
+```
+
+A route is automatically added to the routing table by the kernel (i.e. proto kernel):
+```console
+[root@test-1 vagrant]# ip r
+10.0.0.0/24 dev veth1 proto kernel scope link src 10.0.0.3
+```
+
+
+
+Just like two physical hosts have their own NICs and network stack that can communicate via a physical switch, we can create virtual NICs in two or more network namespaces that we can hook up to a virtual switch/bridge to enable communication between the namespaces/individual network stacks.
+[vagrant@test-1 ~]$ sudo ip link add br-ns type bridge
+[vagrant@test-1 ~]$ sudo ip link set br-ns up
+
