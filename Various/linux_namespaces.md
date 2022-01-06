@@ -9,7 +9,6 @@ A network namespace is logically another copy of the network stack, with its own
 (ip netns add NAME creates a persistent namespace (stays alive without parent process) because the namespace gets bind-mounted to a file in /var/run/netns/)
 
 ```console
-[vagrant@test-1 ~]$ yum install -y httpd
 [vagrant@test-1 ~]$ sudo ip netns add container
 [vagrant@test-1 ~]$ ip netns list
 container
@@ -119,7 +118,44 @@ A route is automatically added to the routing table by the kernel (i.e. proto ke
 10.0.0.0/24 dev veth1 proto kernel scope link src 10.0.0.3
 ```
 
+We can now try to ping the interface in the container veth1 from the default namespace.
 
+```console
+[vagrant@test-1 ~]$ ping -c 3 10.0.0.3
+PING 10.0.0.3 (10.0.0.3) 56(84) bytes of data.
+64 bytes from 10.0.0.3: icmp_seq=1 ttl=64 time=0.031 ms
+64 bytes from 10.0.0.3: icmp_seq=2 ttl=64 time=0.093 ms
+64 bytes from 10.0.0.3: icmp_seq=3 ttl=64 time=0.105 ms
+
+--- 10.0.0.3 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2071ms
+rtt min/avg/max/mdev = 0.031/0.076/0.105/0.033 ms
+```
+
+We could also set up an apache server inside the container namespace:
+
+```console
+[vagrant@test-1 ~]$ yum install -y httpd
+[vagrant@test-1 ~]$ sed -ir '/^Listen/c\Listen 10.0.0.3:80' /etc/httpd/conf/httpd.conf
+[root@test-1 vagrant]# httpd
+AH00558: httpd: Could not reliably determine the server's fully qualified domain name, using 127.0.0.1. Set the 'ServerName' directive globally to suppress this message
+[root@test-1 vagrant]# ps -eo pid,ppid,user,netns,comm
+    PID    PPID USER          NETNS COMMAND
+...output omitted...
+24741       1 root     4026532218 httpd
+24742   24741 apache   4026532218 httpd
+24743   24741 apache   4026532218 httpd
+24744   24741 apache   4026532218 httpd
+24745   24741 apache   4026532218 httpd
+[vagrant@test-1 ~]$ curl 10.0.0.3:80
+Hello World!
+```
+
+
+
+
+
+------------------
 
 Just like two physical hosts have their own NICs and network stack that can communicate via a physical switch, we can create virtual NICs in two or more network namespaces that we can hook up to a virtual switch/bridge to enable communication between the namespaces/individual network stacks.
 [vagrant@test-1 ~]$ sudo ip link add br-ns type bridge
