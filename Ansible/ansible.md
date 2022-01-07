@@ -42,9 +42,10 @@ Since web interfaces are not very suitable for automation, BMC's commonly also p
 
 We can use sushy-tools to emulate a BMC with Redfish API. The package ships two simulators – static Redfish responder and virtual Redfish BMC that is backed by libvirt or OpenStack cloud. We're interested in the latter. From the official git repository (https://github.com/openstack/sushy-tools):
 
-```
-"The virtual Redfish BMC resembles the real Redfish-controlled bare-metal machine to some extent. Some client queries are translated to commands that actually control VM instances simulating bare metal hardware. However some of the Redfish commands just return static content never touching the virtualization backend..."
-```
+>"The virtual Redfish BMC resembles the real Redfish-controlled bare-metal machine to some extent. 
+>Some client queries are translated to commands that actually control VM instances simulating bare metal hardware. 
+>However some of the Redfish commands just return static content never touching the virtualization backend..."
+
 
 Documentation can be found at https://docs.openstack.org/sushy-tools/latest/install/index.html.
 
