@@ -34,7 +34,19 @@ An important design principle of ansible is that a task is only performed if the
 
 There is of course a lot more to ansible than the introduction above, but that is the general principle.
 
-## Redfish API
+## BMC's and the Redfish API
 
-Redfish is an industry standard RESTful API for IT infrastructure. It uses HTTPS and the JSON format.
+A baseboard management controller (BMC) is a specialized service processor that monitors the physical state of a computer, server or other hardware devices. It can be used to administer a device through an independent connection. One example of a BMC is Integrated Lights-Out (iLO), which you'll find in servers from HP. iLO is basically a small computer inside the server's chassis with a separate power supply and a dedicated network interface. iLO runs a web server on its network interface that a system administrator can log onto and gain access to hardware related settings as well as a web console for the server. From the BMC, you can even shut down the server and bring it back up without losing access to the BMC.
+
+Since web interfaces are not very suitable for automation, BMC's commonly also provides an API. Redfish is an industry standard RESTful API specification for IT infrastructure. It uses HTTPS and the JSON format.
+
+We can use sushy-tools to emulate a BMC with Redfish API. The package ships two simulators – static Redfish responder and virtual Redfish BMC that is backed by libvirt or OpenStack cloud. We're interested in the latter. From the official git repository (https://github.com/openstack/sushy-tools):
+
+```
+"The virtual Redfish BMC resembles the real Redfish-controlled bare-metal machine to some extent. Some client queries are translated to commands that actually control VM instances simulating bare metal hardware. However some of the Redfish commands just return static content never touching the virtualization backend..."
+```
+
+Documentation can be found at https://docs.openstack.org/sushy-tools/latest/install/index.html.
+
+
 
