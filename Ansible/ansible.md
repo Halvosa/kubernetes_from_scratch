@@ -32,13 +32,15 @@ Playbooks are written in YAML format. The `hosts` directive specifies the group 
 
 An important design principle of ansible is that a task is only performed if the target host does not already satify the configuration given by the task. If, for example, httpd is already installed, ansible will simply report back that no changes were made. _A playbook should therefore be viewed as a description of a particular configuration *state* that you wish your hosts to have._ This means that if one or more hosts in a host group were to deviate from the configuration, you can run the playbook again against all the hosts in the group, and changes will only be applied to those hosts whose configuration don't align with the state described by the playbook.
 
+Ansible also has a `uri` module that, instead of SSH-ing into the hosts, simply performes an HTTP request from the control node. This can be useful for many things, for example to retrieve a file from a web server that in the next task in the playbook should be distributed out to the hosts. Or it can be used to interface with a web API.
+
 There is of course a lot more to ansible than the introduction above, but that is the general principle.
 
 ## BMC's and the Redfish API
 
 A baseboard management controller (BMC) is a specialized service processor that monitors the physical state of a computer, server or other hardware devices. It can be used to administer a device through an independent connection. One example of a BMC is Integrated Lights-Out (iLO), which you'll find in servers from HP. iLO is basically a small computer inside the server's chassis with a separate power supply and a dedicated network interface. iLO runs a web server on its network interface that a system administrator can log onto and gain access to hardware related settings as well as a web console for the server. From the BMC, you can even shut down the server and bring it back up without losing access to the BMC.
 
-Since web interfaces are not very suitable for automation, BMC's commonly also provide an API. Redfish is an industry standard RESTful API specification for IT infrastructure. It uses HTTPS and the JSON format.
+Since graphical web interfaces are not very suitable for automation, BMC's commonly also provide an API. Redfish is an industry standard RESTful API specification for IT infrastructure. It uses HTTPS and the JSON format.
 
 We can use sushy-tools to emulate a BMC with Redfish API. The package ships two simulators – static Redfish responder and virtual Redfish BMC that is backed by libvirt or OpenStack cloud. We're interested in the latter. From the official git repository (https://github.com/openstack/sushy-tools):
 
