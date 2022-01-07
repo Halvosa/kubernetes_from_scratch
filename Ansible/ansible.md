@@ -191,7 +191,15 @@ halvor@halvor-NUC:~$ curl localhost:8000/redfish/v1/Systems/d9833cb5-4e83-4ced-8
     
 ...output omitted...
 
+halvor@halvor-NUC:~$ virsh list
+ Id   Name   State
+--------------------
+
 halvor@halvor-NUC:~$ curl -X POST localhost:8000/redfish/v1/Systems/d9833cb5-4e83-4ced-8df9-87e07f837ca0/Actions/ComputerSystem.Reset -H 'Content-Type: application/json' -d '{"ResetType":"On"}'
+halvor@halvor-NUC:~$ virsh list
+ Id   Name                 State
+------------------------------------
+ 6    Vagrant_k8s-master   running
 ```
 
 
