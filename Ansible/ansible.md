@@ -1,8 +1,8 @@
-# Ansible
+# DRAFT - Provisioning Cluster Nodes with Ansible 
 
-Ansible is a automation tool used for configuring servers. The architecture is fairly simple: 
+## Ansible
 
-One server acts as a control node. You install the ansible RPM on it, which includes the `ansible` command and so called ansible modules. Ansible is simple because it only uses SSH to configure servers. You don't need to install an agent on the servers. (Some configuration tasks might require certain Python modules to be installed on the servers, however.) The control node only needs SSH access to the hosts. The control node SSH into the hosts and runs a series of regular commands to achieve the state you configured on the control node, much like a sysadmin would configure servers manually. The automation happens on the control node. 
+Ansible is a automation tool used for configuring servers. At the most basic level, the architecture is fairly simple: One server acts as a control node. You install the ansible RPM on it, which includes the `ansible` command and so-called ansible modules (and of course, the brain of ansible, the ansible automation controller). Ansible is simple because it only uses SSH to configure servers. You don't need to install an agent on the servers. (Some configuration tasks might require certain Python modules to be installed on the servers, however.) The control node only needs SSH access to the hosts. The control node SSH into the hosts and runs a series of regular commands to achieve the state you configured on the control node, much like a sysadmin would configure servers manually. The automation happens on the control node. 
 
 On the control node you write so-called "playbooks", which is just a file in which you state in order what tasks should be performed on the hosts. One task could be "install httpd", followed by "allow connections on port 80". You also state which hosts the playbook should apply to. Below is a very basic example playbook.
 
@@ -34,4 +34,7 @@ An important design principle of ansible is that a task is only performed if the
 
 There is of course a lot more to ansible than the introduction above, but that is the general principle.
 
-# Redfish API
+## Redfish API
+
+Redfish is an industry standard RESTful API for IT infrastructure. It uses HTTPS and the JSON format.
+
