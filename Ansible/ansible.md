@@ -190,6 +190,8 @@ halvor@halvor-NUC:~$ curl localhost:8000/redfish/v1/Systems/d9833cb5-4e83-4ced-8
     },
     
 ...output omitted...
+
+halvor@halvor-NUC:~$ curl -X POST localhost:8000/redfish/v1/Systems/d9833cb5-4e83-4ced-8df9-87e07f837ca0/Actions/ComputerSystem.Reset -H 'Content-Type: application/json' -d '{"ResetType":"On"}'
 ```
 
 
