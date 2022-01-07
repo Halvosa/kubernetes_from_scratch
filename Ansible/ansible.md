@@ -38,7 +38,7 @@ There is of course a lot more to ansible than the introduction above, but that i
 
 A baseboard management controller (BMC) is a specialized service processor that monitors the physical state of a computer, server or other hardware devices. It can be used to administer a device through an independent connection. One example of a BMC is Integrated Lights-Out (iLO), which you'll find in servers from HP. iLO is basically a small computer inside the server's chassis with a separate power supply and a dedicated network interface. iLO runs a web server on its network interface that a system administrator can log onto and gain access to hardware related settings as well as a web console for the server. From the BMC, you can even shut down the server and bring it back up without losing access to the BMC.
 
-Since web interfaces are not very suitable for automation, BMC's commonly also provides an API. Redfish is an industry standard RESTful API specification for IT infrastructure. It uses HTTPS and the JSON format.
+Since web interfaces are not very suitable for automation, BMC's commonly also provide an API. Redfish is an industry standard RESTful API specification for IT infrastructure. It uses HTTPS and the JSON format.
 
 We can use sushy-tools to emulate a BMC with Redfish API. The package ships two simulators – static Redfish responder and virtual Redfish BMC that is backed by libvirt or OpenStack cloud. We're interested in the latter. From the official git repository (https://github.com/openstack/sushy-tools):
 
@@ -47,7 +47,47 @@ We can use sushy-tools to emulate a BMC with Redfish API. The package ships two 
 >However some of the Redfish commands just return static content never touching the virtualization backend..."
 
 
-Documentation can be found at https://docs.openstack.org/sushy-tools/latest/install/index.html.
+Documentation can be found at https://docs.openstack.org/sushy-tools/latest/install/index.html. Let us now set up a virtual Redfish BMC to control our libvirt-based cluster node VM's, such that we can simulate the provisioning of physical cluster nodes with Ansible. 
+
+```console
+halvor@halvor-NUC:~$ sudo pip install sushy-tools
+halvor@halvor-NUC:~$ sudo pip install libvirt-python
+Requirement already satisfied: libvirt-python in /usr/lib/python3/dist-packages (6.1.0)
+halvor@halvor-NUC:~$ which sushy-emulator 
+/home/halvor/.local/bin/sushy-emulator
+```
+Creating a systemd unit file for simplicity:
+
+```console
+halvor@halvor-NUC:~$ sudo bash -c 'cat << EOF > /etc/systemd/system/sushy-emulator.service
+> [Unit]
+> Description=Sushy Libvirt emulator
+> After=syslog.target
+> 
+> [Service]
+> Type=simple
+> ExecStart=/home/halvor/.local/bin/sushy-emulator --port 8000 --libvirt-uri "qemu:///system"
+> StandardOutput=syslog
+> StandardError=syslog
+> EOF'
+```
+
+We can now start the Redfish API BMC service and curl then curl the server to see if it works:
+
+```console
+halvor@halvor-NUC:~$ sudo systemctl start sushy-emulator
+halvor@halvor-NUC:~$ curl localhost:8000/redfish/v1/
+{
+    "@odata.type": "#ServiceRoot.v1_0_2.ServiceRoot",
+    "Id": "RedvirtService",
+    "Name": "Redvirt Service",
+    "RedfishVersion": "1.0.2",
+    "UUID": "85775665-c110-4b85-8989-e6162170b3ec",
+    "Systems": {
+        "@odata.id": "/redfish/v1/Systems"
+    },
+...output omitted...
+```
 
 
 
