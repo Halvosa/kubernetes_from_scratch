@@ -89,5 +89,106 @@ halvor@halvor-NUC:~$ curl localhost:8000/redfish/v1/
 ...output omitted...
 ```
 
+Let's see if we can start the VM k8s-master via Redfish:
+
+```console
+halvor@halvor-NUC:~$ curl localhost:8000/redfish/v1/Systems
+{
+    "@odata.type": "#ComputerSystemCollection.ComputerSystemCollection",
+    "Name": "Computer System Collection",
+    "Members@odata.count": 8,
+    "Members": [
+        
+            {
+                "@odata.id": "/redfish/v1/Systems/d9833cb5-4e83-4ced-8df9-87e07f837ca0"
+            },
+        
+            {
+                "@odata.id": "/redfish/v1/Systems/9a71e255-1a67-430f-a178-809dfbce329a"
+            },
+        
+            {
+                "@odata.id": "/redfish/v1/Systems/07f98172-86f7-4b4b-bddb-0d642373debb"
+            },
+        
+...output omitted...
+            
+halvor@halvor-NUC:~$ curl localhost:8000/redfish/v1/Systems/d9833cb5-4e83-4ced-8df9-87e07f837ca0
+{
+    "@odata.type": "#ComputerSystem.v1_1_0.ComputerSystem",
+    "Id": "d9833cb5-4e83-4ced-8df9-87e07f837ca0",
+    "Name": "Vagrant_k8s-master",
+    "UUID": "d9833cb5-4e83-4ced-8df9-87e07f837ca0",
+    "Manufacturer": "Sushy Emulator",
+    "Status": {
+        "State": "Enabled",
+        "Health": "OK",
+        "HealthRollUp": "OK"
+    },
+    "PowerState": "Off",
+    "Boot": {
+        "BootSourceOverrideEnabled": "Continuous",
+        "BootSourceOverrideTarget": "Hdd",
+        "BootSourceOverrideTarget@Redfish.AllowableValues": [
+            "Pxe",
+            "Cd",
+            "Hdd"
+        ]
+    },
+    "ProcessorSummary": {
+        "Count": 2,
+        "Status": {
+            "State": "Enabled",
+            "Health": "OK",
+            "HealthRollUp": "OK"
+        }
+    },
+    "MemorySummary": {
+        "TotalSystemMemoryGiB": 1,
+        "Status": {
+            "State": "Enabled",
+            "Health": "OK",
+            "HealthRollUp": "OK"
+        }
+    },
+    "Bios": {
+        "@odata.id": "/redfish/v1/Systems/d9833cb5-4e83-4ced-8df9-87e07f837ca0/BIOS"
+    },
+    "Processors": {
+        "@odata.id": "/redfish/v1/Systems/d9833cb5-4e83-4ced-8df9-87e07f837ca0/Processors"
+    },
+    "Memory": {
+        "@odata.id": "/redfish/v1/Systems/d9833cb5-4e83-4ced-8df9-87e07f837ca0/Memory"
+    },
+    "EthernetInterfaces": {
+        "@odata.id": "/redfish/v1/Systems/d9833cb5-4e83-4ced-8df9-87e07f837ca0/EthernetInterfaces"
+    },
+    "SimpleStorage": {
+        "@odata.id": "/redfish/v1/Systems/d9833cb5-4e83-4ced-8df9-87e07f837ca0/SimpleStorage"
+    },
+    "Storage": {
+        "@odata.id": "/redfish/v1/Systems/d9833cb5-4e83-4ced-8df9-87e07f837ca0/Storage"
+    },
+    
+...output omitted...
+    
+    "Actions": {
+        "#ComputerSystem.Reset": {
+            "target": "/redfish/v1/Systems/d9833cb5-4e83-4ced-8df9-87e07f837ca0/Actions/ComputerSystem.Reset",
+            "ResetType@Redfish.AllowableValues": [
+                "On",
+                "ForceOff",
+                "GracefulShutdown",
+                "GracefulRestart",
+                "ForceRestart",
+                "Nmi",
+                "ForceOn"
+            ]
+        }
+    },
+    
+...output omitted...
+```
+
 
 
