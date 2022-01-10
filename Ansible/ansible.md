@@ -245,6 +245,58 @@ ansible@halvor-NUC:~/projects/redfish_test$ echo "autocmd FileType yaml setlocal
 ```console
 ansible@halvor-NUC:~/projects/redfish_test$ vim redfish.yml
 ansible@halvor-NUC:~/projects/redfish_test$ ansible-playbook redfish.yml
+ansible@halvor-NUC:~/projects/redfish_test$ ansible-playbook redfish.yml 
+[WARNING]: provided hosts list is empty, only localhost is available. Note that the implicit localhost does not match
+'all'
+
+PLAY [Test Redfish API] *************************************************************************************************
+
+TASK [Gathering Facts] **************************************************************************************************
+ok: [localhost]
+
+TASK [Get API Status] ***************************************************************************************************
+ok: [localhost]
+
+TASK [debug] ************************************************************************************************************
+ok: [localhost] => {
+    "response": {
+        "changed": false,
+        "content_length": "623",
+        "content_type": "application/json",
+        "cookies": {},
+        "cookies_string": "",
+        "date": "Mon, 10 Jan 2022 15:21:45 GMT",
+        "elapsed": 0,
+        "failed": false,
+        "json": {
+            "@Redfish.Copyright": "Copyright 2014-2016 Distributed Management Task Force, Inc. (DMTF). For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright.",
+            "@odata.id": "/redfish/v1/",
+            "@odata.type": "#ServiceRoot.v1_0_2.ServiceRoot",
+            "Id": "RedvirtService",
+            "Managers": {
+                "@odata.id": "/redfish/v1/Managers"
+            },
+            "Name": "Redvirt Service",
+            "RedfishVersion": "1.0.2",
+            "Registries": {
+                "@odata.id": "/redfish/v1/Registries"
+            },
+            "Systems": {
+                "@odata.id": "/redfish/v1/Systems"
+            },
+            "UUID": "85775665-c110-4b85-8989-e6162170b3ec"
+        },
+        "msg": "OK (623 bytes)",
+        "redirected": false,
+        "server": "Werkzeug/2.0.2 Python/3.8.10",
+        "status": 200,
+        "url": "http://localhost:8000/redfish/v1/"
+    }
+}
+
+PLAY RECAP **************************************************************************************************************
+localhost                  : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
 ```
 
 ```yaml
