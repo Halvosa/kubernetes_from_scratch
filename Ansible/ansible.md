@@ -222,7 +222,22 @@ root@halvor-NUC:~# virt-install --connect="qemu:///system" -n redfish_test --os-
 
 ```console
 root@halvor-NUC:~# apt install -y ansible
-root@halvor-NUC:~# useradd ansible
-root@halvor-NUC:~# passwd ansible
+root@halvor-NUC:~# adduser ansible
+root@halvor-NUC:~# su - ansible
+ansible@halvor-NUC:~$ mkdir -p projects/redfish_test
+ansible@halvor-NUC:~$ cd projects/redfish_test
+ansible@halvor-NUC:~/projects/redfish_test$ cat <<EOF > ansible.cfg
+[defaults]
+inventory=./inventory
+remote_user=ansible
+ask_pass=false
+
+[privilege_escalation]
+become=true
+become_method=sudo
+become_user=root
+become_ask_pass=false
+EOF
+ansible@halvor-NUC:~/projects/redfish_test$ touch inventory
 ```
 
