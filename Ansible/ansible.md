@@ -239,5 +239,29 @@ become_user=root
 become_ask_pass=false
 EOF
 ansible@halvor-NUC:~/projects/redfish_test$ touch inventory
+ansible@halvor-NUC:~/projects/redfish_test$ echo "autocmd FileType yaml setlocal ai ts=2 sw=2 et" > /home/ansible/.vimrc
+```
+
+```console
+ansible@halvor-NUC:~/projects/redfish_test$ vim redfish.yml
+ansible@halvor-NUC:~/projects/redfish_test$ ansible-playbook redfish.yml
+```
+
+```yaml
+---
+- name: Test Redfish API
+  hosts: localhost
+  become: false
+  tasks:
+    - name: Get API Status
+      uri:
+        url: http://localhost:8000/redfish/v1/
+        method: GET
+        #body:
+        #body_format: json
+      register: response
+
+    - debug:
+        var: response
 ```
 
