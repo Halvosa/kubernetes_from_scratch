@@ -202,5 +202,27 @@ halvor@halvor-NUC:~$ virsh list
  6    Vagrant_k8s-master   running
 ```
 
+## Creating a Blank VM
 
+```console
+root@halvor-NUC:~# ip link add br_redfish type bridge
+root@halvor-NUC:~# ip addr add 10.5.5.1/24 dev br_redfish
+root@halvor-NUC:~# ip link set br_redfish up
+```
+
+```console
+root@halvor-NUC:~# qemu-img create -f qcow2 /var/lib/libvirt/images/redfish_test.qcow2 16G
+root@halvor-NUC:~# virt-install --connect="qemu:///system" -n redfish_test --os-type=Linux --os-variant=fedora31 --ram=1024 --vcpus=2 --disk /var/lib/libvirt/images/redfish_test.qcow2 --graphics none --network bridge:br_redfish --boot hd
+```
+
+
+
+
+## Setting up Ansible
+
+```console
+root@halvor-NUC:~# apt install -y ansible
+root@halvor-NUC:~# useradd ansible
+root@halvor-NUC:~# passwd ansible
+```
 
