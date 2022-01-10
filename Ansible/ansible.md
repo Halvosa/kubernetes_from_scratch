@@ -215,7 +215,14 @@ root@halvor-NUC:~# qemu-img create -f qcow2 /var/lib/libvirt/images/redfish_test
 root@halvor-NUC:~# virt-install --connect="qemu:///system" -n redfish_test --os-type=Linux --os-variant=fedora31 --ram=1024 --vcpus=2 --disk /var/lib/libvirt/images/redfish_test.qcow2 --graphics none --network bridge:br_redfish --boot hd
 ```
 
+## Provisioning via Redfish API
 
+```
+You can use Redfish virtual media boot to supply a boot image to the Baseboard Management Controller (BMC) of a node so that the BMC can insert the image into one of the virtual drives. The node can then boot from the virtual drive into the operating system that exists in the image.
+
+Redfish hardware types support booting deploy, rescue, and user images over virtual media. The Bare Metal service (ironic) uses kernel and ramdisk images associated with a node to build bootable ISO images for UEFI or BIOS boot modes at the moment of node deployment. The major advantage of virtual media boot is that you can eliminate the TFTP image transfer phase of PXE and use HTTP GET, or other methods, instead. 
+```
+(https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/16.0/html/bare_metal_provisioning/sect-configure#configuring-redfish-virtual-media-boot)
 
 
 ## Setting up Ansible
