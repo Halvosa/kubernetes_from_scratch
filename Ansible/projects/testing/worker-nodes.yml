@@ -1,0 +1,27 @@
+---
+- name: Configure worker nodes
+  hosts: workers
+  vars:
+    kubelet_port: 20250
+  tasks:
+    - name: install firewalld
+      yum:
+        name: firewalld
+        state: latest
+        
+    - name: run firewalld
+      service:
+        name: firewalld
+        state: started
+        enabled: true
+        
+    - name: open Kubelet port
+      firewalld:
+        port: "{{ kubelet_port }}"/tcp
+        state: enabled
+        immediate: yes
+        permanent: true
+        
+        
+  
+  
